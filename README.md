@@ -1,0 +1,4 @@
+ECoHMM
+======
+
+Erlang CoHMM demo.
