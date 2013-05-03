@@ -12,7 +12,7 @@ string_to_num(S) ->
 
 p() ->
     io:format("Starting~n", []),
-    Cmd = "./comd\n",
+    Cmd = "./comd -x 123.0 -y 234.0 -z 345.0",   % don't need newline
     Port = open_port({spawn,Cmd}, [use_stdio, exit_status]),
     Payload = list_to_binary("1.0 2.0 3.0\n") ,
     io:format("Opened the port: ~w~n", [Port]),

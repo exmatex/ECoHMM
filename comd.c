@@ -27,6 +27,6 @@ int main(int argc, char* argv[])
     }
 
 
-	//scanf("%f %f %f", &x, &y, &z);
+	scanf("%f %f %f", &x, &y, &z);
 	printf("%f %f %f\n", x, y, z);
 }
