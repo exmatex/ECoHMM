@@ -30,5 +30,6 @@ int main(int argc, char* argv[])
 	scanf("%f %f %f", &x, &y, &z);
 	printf("%f %f %f\n", x, y, z);
     fflush(stdout);
-    sleep(10);
+    sleep(20);
+    return(-22);
 }
