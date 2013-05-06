@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 
 %% Server API
--export([start_link/4, stop/1]).
+-export([start_link/5, stop/1]).
 
 %% Client API
 -export([echo/1]).
@@ -11,18 +11,18 @@
 -export([init/1, handle_call/3, handle_cast/2,
          handle_info/2, terminate/2, code_change/3]).
 
--define(SERVER(Name), list_to_atom("comd_srv_" ++ atom_to_list(Name))).
+-define(SERVER(Cell), list_to_atom("comd_" ++ integer_to_list(Cell))).
 
--record(state, {name, command_line, index, time_step}).
+-record(state, {name, command_line, index, time_step, hmm_pid}).
 
 %%====================================================================
 %% Server API
 %%====================================================================
 
-start_link(Name, CommandLine, Index, TimeStep) ->
+start_link(Name, CommandLine, Index, TimeStep, Pid) ->
     Result = gen_server:start_link(
-               {local, ?SERVER(Name)},
-               ?MODULE, [Name, CommandLine, Index, TimeStep], []),
+               {local, ?SERVER(Index)},
+               ?MODULE, [Name, CommandLine, Index, TimeStep, Pid], []),
     io:format("~p: started~n", [Name]),
     Result.
 
@@ -40,23 +40,27 @@ echo(Name) ->
 %% gen_server callbacks
 %%====================================================================
 
-init([Name, CommandLine, Index, TimeStep]) ->
+init([Name, CommandLine, Index, TimeStep, Pid]) ->
     process_flag(trap_exit, true),
     Port = open_port({spawn, CommandLine}, [use_stdio, exit_status]),
     Payload = list_to_binary("1.0 2.0 3.0\n") ,
     % io:format("Opened the port: ~w~n", [Port]),
     erlang:port_command(Port, Payload),
     % io:format("Sent command to port: ~p~n", [Payload]),
+    % Send our name and cell to HMM so it can tell us what to do.
+    Pid ! {comd_started, {Index, Name}},
     {ok, #state{name = Name,
                 command_line = CommandLine,
                 index = Index,
-                time_step = TimeStep}}.
+                time_step = TimeStep,
+                hmm_pid=Pid}}.
 
 handle_cast(echo_message,
             State = #state{name = Name,
                            command_line = CommandLine,
                            index = Index,
-                           time_step = TimeStep}) ->
+                           time_step = TimeStep,
+                           hmm_pid=Pid}) ->
     % io:format("~p: ~p ~p ~p~n", [Name, CommandLine, Index, TimeStep]),
     {noreply, State#state{time_step = TimeStep + 1}}.
 
