@@ -19,8 +19,15 @@ loop(Port) ->
             Fun = fun string_to_num/1,
             lists:foreach(Fun, L),
             io:format("Data: ~p~n", [Data]);
+        {'EXIT', Port, Status} ->
+            io:format("EXIT: ~p ~p~n", [Port, Status]),
+            exit(port_terminated);
+        {Port, {exit_status, Status}} ->
+            io:format("Normal: ~p ~p~n", [Port, Status]),
+            exit(normal_process_exit);
         Other ->
-            io:format("Unexpected data: ~p~n", [Other])
+            io:format("Unexpected data: ~p~n", [Other]),
+            exit(got_some_unexpected_message)
 
     end,
     loop(Port).
