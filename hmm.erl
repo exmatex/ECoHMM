@@ -3,24 +3,40 @@
 -export([run/1]).
 
 run(N) ->
-	{ok, Pid} = comd_sup:start_link(self(), N),
-	unlink(Pid),
-	AllNames = get_all_names(N),
-	run_app(100).
+    {ok, Pid} = comd_sup:start_link(self(), N),
+    unlink(Pid),   % so shell doesn't crash
+    Servers = get_servers([], N),
+    io:format("~p servers started: ~p~n", [length(Servers), Servers]),
+    timesteps(1, Servers).
 
-get_all_names(N) when N > 0 ->
-	receive
-		{comd_started, {Cell, Name}} ->
-			io:format("comd_started: [~p]~p~n", [Cell, Name])
-	end,
-	get_all_names(N-1);
-get_all_names(0) ->
-	ok.
-	
-run_app(TS) when TS > 0 ->
-	%send_stress(AllNames),
-	%get_strain(AllNames),
-	%update_stress(AllNames),
-	run_app(TS-1);
-run_app(0) ->
-	ok.
+%% Returns the list of stated CoMD servers.  This list is
+%% collected by accepting startup messages from each individual
+%% server.
+get_servers(L, N) when N > 0 ->
+    receive
+        {comd_started, {Cell, Name}} ->
+            ok
+    end,
+    get_servers([{Cell, Name} | L], N-1);
+get_servers(L, 0) ->
+    lists:reverse(L).
+    
+%% Run the servers through a number of timesteps.
+%% This is the main execution loop of the code.
+%%
+%%  1.  Start servers running by sending them strain.  This is the HO task.
+%%  2.  Loop waiting for all servers to return their stress.
+%%  3.  Calculate new strains based on the returned stresses. This is the LO task.
+%%  4.  Repeat.
+timesteps(N, S) when N > 0 ->
+    lists:foreach(fun send_stress/1, S),
+    %send_stress(AllNames),
+    %get_strain(AllNames),
+    %update_stress(AllNames),
+    timesteps(N-1, S);
+timesteps(0, S) ->
+    ok.
+
+send_stress(E) ->
+    {_, Server} = E,
+    gen_server:cast(Server, {set_stress, [-9863.09, 6353.2]}).
