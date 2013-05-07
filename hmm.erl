@@ -30,8 +30,8 @@ get_servers(L, 0) ->
 %%  4.  Repeat.
 timesteps(N, S) when N > 0 ->
     lists:foreach(fun send_stress/1, S),
-    %send_stress(AllNames),
-    %get_strain(AllNames),
+    Strain = get_strain([], length(S)),
+    io:format("strains: ~p~n", [lists:sort(Strain)]),
     %update_stress(AllNames),
     timesteps(N-1, S);
 timesteps(0, S) ->
@@ -39,4 +39,13 @@ timesteps(0, S) ->
 
 send_stress(E) ->
     {_, Server} = E,
-    gen_server:cast(Server, {set_stress, [-9863.09, 6353.2]}).
+    comd_srv:set_stress(Server, [-9863.09, 6353.2]).
+
+get_strain(L, N) when N > 0 ->
+    receive
+        {strain, Cell, Strain} ->
+            ok
+    end,
+    get_strain([{Cell, Strain} | L], N-1);
+get_strain(L, 0) ->
+    L.

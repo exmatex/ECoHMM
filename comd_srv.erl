@@ -77,15 +77,24 @@ handle_cast({set_stress, Stress},
 handle_call(_Message, _From, State) ->
     {reply, ok, State}.
 
+%% Get replies from the external code. Messages preceded
+%% by code that specifies function to be carried out here.
+%%
+%%   strain: resultant strain from comd
 handle_info({Port, {data, Data}}, 
-            State = #state{name = Name, time_step = TimeStep}) ->
+            State = #state{name = Name,
+                           command_line = CommandLine,
+                           index = Index,
+                           time_step = TimeStep,
+                           port = Port,
+                           hmm_pid=Pid}) ->
     L = string:tokens(Data, " "),
     [CodeString|_] = L,
     Code = list_to_atom(CodeString),
     %Fun = fun string_to_num/1,
     %lists:foreach(Fun, L),
     %io:format("[~p]{~p} Data: ~p~n", [Name, TimeStep, Code]),
-    process_code(Code, L),
+    process_code(Code, L, Index, TimeStep, Pid),
     {noreply, State};
 handle_info({Port, {exit_status, 234}}, State) ->
     % io:format("NORMAL: ~p ~p~n", [Port, 234]),
@@ -122,5 +131,9 @@ string_to_num(S) ->
         F
     end.
 
-process_code(Code, Tokens) when Code == strain ->
-    io:format("Got strain: ~p~n", [Tokens]).
+%% These return message to be sent to hmm.
+process_code(Code, Tokens, Ix, TS, Pid) when Code == strain ->
+    io:format("Got strain: ~p~n", [Tokens]),
+    TokensNoCode = lists:delete("strain", Tokens),
+    Strain = lists:map(fun(E) -> string_to_num(E) end, TokensNoCode),
+    Pid ! {strain, Ix, Strain}.
