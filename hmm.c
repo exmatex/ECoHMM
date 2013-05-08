@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 {
     double  stress[50];
 
+#if 0
     for (int i=0; i<50; i++) {
 	   fscanf(stdin, "%lf", &stress[i]);
     }
@@ -24,5 +25,7 @@ int main(int argc, char* argv[])
     for (int i=0; i<50; i++) {
         printf("%2d: %lf\n", i, stress[i]);
     }
+#endif
+    sleep(10);
     return(-22);
 }

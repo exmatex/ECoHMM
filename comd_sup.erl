@@ -16,7 +16,8 @@
 %%====================================================================
 
 start_link(Pid, N) ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, [Pid, N]).
+    supervisor:start_link(?MODULE, [Pid, N]).
+    %% supervisor:start_link({local, ?SERVER}, ?MODULE, [Pid, N]).
 
 %%====================================================================
 %% Supervisor callbacks
