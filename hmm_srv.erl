@@ -5,13 +5,13 @@
 -export([start_link/2, stop/1]).
 
 %% Client API
--export([echo/1]).
+-export([echo/1, send_stress/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2,
          handle_info/2, terminate/2, code_change/3]).
 
--record(state, {name, command_line}).
+-record(state, {name, command_line, port}).
 
 %%====================================================================
 %% Server API
@@ -35,6 +35,9 @@ stop(Name) ->
 echo(Name) ->
     gen_server:cast(Name, echo_message).
 
+send_stress(Name, Stress) ->
+    gen_server:cast(Name, {send_stress, Stress}).
+
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
@@ -45,12 +48,19 @@ init([Name, CommandLine]) ->
     Port = open_port({spawn, CommandLine}, [use_stdio, exit_status]),
     % Send our name and cell to HMM so it can tell us what to do.
     {ok, #state{name = Name,
-                command_line = CommandLine}}.
+                command_line = CommandLine, port = Port}}.
 
 handle_cast(echo_message,
             State = #state{name = Name,
                            command_line = CommandLine}) ->
     io:format("~p: ~p~n", [Name, CommandLine]),
+    {noreply, State};
+handle_cast({send_stress, Stress},
+            State = #state{name = Name, port = Port}) ->
+    [StressX, StressY] = Stress,
+    Formatted = io_lib:format("~.6f ~.6f~n", [StressX, StressY]),
+    Payload = list_to_binary(lists:flatten(Formatted)),
+    erlang:port_command(Port, Payload),
     {noreply, State}.
 
 handle_call(_Message, _From, State) ->

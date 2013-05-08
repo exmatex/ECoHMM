@@ -26,6 +26,13 @@ int main(int argc, char* argv[])
         printf("%2d: %lf\n", i, stress[i]);
     }
 #endif
+    float  stress_x, stress_y;
+    float  strain_x, strain_y;
+
+    scanf("%f %f", &stress_x, &stress_y);
+    sleep(2);
+    //printf("losolve stress %f %f\n", 1.0/stress_x, 1.0/stress_y);
+    //fflush(stdout);
     sleep(10);
     return(-22);
 }

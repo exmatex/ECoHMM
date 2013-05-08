@@ -4,9 +4,10 @@
 
 run(N) ->
     {ok, PidCoMD} = comd_sup:start_link(self(), N),
-    %% {ok, PidHMM}  = hmm_sup:start_link(self(), N),
+    {ok, PidHMM}  = hmm_sup:start_link(),
+    hmm_srv:send_stress(losolve, [23.9, 22.3]),
     unlink(PidCoMD),   % so shell doesn't crash
-    %% unlink(PidHMM),    % so shell doesn't crash
+    unlink(PidHMM),    % so shell doesn't crash
     Servers = get_servers([], N),
     io:format("~p servers started: ~p~n", [length(Servers), Servers]),
     timesteps(1, Servers).
