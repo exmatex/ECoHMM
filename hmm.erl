@@ -3,8 +3,10 @@
 -export([run/1]).
 
 run(N) ->
-    {ok, Pid} = comd_sup:start_link(self(), N),
-    unlink(Pid),   % so shell doesn't crash
+    {ok, PidCoMD} = comd_sup:start_link(self(), N),
+    %% {ok, PidHMM}  = hmm_sup:start_link(self(), N),
+    unlink(PidCoMD),   % so shell doesn't crash
+    %% unlink(PidHMM),    % so shell doesn't crash
     Servers = get_servers([], N),
     io:format("~p servers started: ~p~n", [length(Servers), Servers]),
     timesteps(1, Servers).

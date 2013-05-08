@@ -1,7 +1,7 @@
 ERL=erl
 ERLC=erlc
 ERLCFLAGS+=-W +debug_info
-ERLS=comd_sup.erl comd_srv.erl hmm.erl
+ERLS=comd_sup.erl comd_srv.erl hmm.erl hmm_sup.erl hmm_srv.erl
 BEAMS=$(ERLS:.erl=.beam)
 
 .PHONY: clean
