@@ -1,0 +1,25 @@
+
+////
+This is an asciidoc file.  Just do: asciidoc About.txt
+////
+
+= CoMD/Swift: Overview
+
+== Sites
+
+=== ALCF: Surveyor
+
+Add the following to your +PATH+:
+* +/home/wozniak/Public/turbine-trunk-mpich-ppc64/bin+
+* +/home/wozniak/Public/stc-trunk/bin+
+
+Optional +PATH+ entries (for development):
+* +/home/wozniak/Public/tcl-8.5.9-ppc64/bin+
+* +/home/wozniak/Public/mpich-trunk-ppc64/bin+
+
+////
+Local Variables:
+mode: doc
+eval: (auto-fill-mode 1)
+End:
+////

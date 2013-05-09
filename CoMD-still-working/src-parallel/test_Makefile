@@ -1,0 +1,66 @@
+#
+# Makfile for src-parallel
+#
+
+include ../makefile.CHOICES
+
+# Add includes
+INCLUDES = -I. -Iinclude -I../src-flat/include -std=c99 
+#INCLUDES = -I. -Iinclude -std=c99 
+
+# Add includes for MPI is selected
+ifeq ($(DO_MPI), ON)
+INCLUDES += ${MPI_INCLUDE}
+endif
+
+CC = gcc
+CFLAG += ${OPT} ${INCLUDES}
+
+# Check for MPI
+ifeq ($(DO_MPI), ON)
+CFLAG += -DDO_MPI
+endif
+
+# Check for double precision
+ifeq ($(DOUBLE_PRECISION), ON)
+CFLAG += -DDOUBLE
+else
+CFLAG += -DSINGLE
+endif
+
+# Check for gzip support
+ifeq ($(DO_GZIP), ON)
+CFLAG += -DGZIPSUPPORT
+endif
+
+# Check for CHEBY 
+ifeq ($(USE_CHEBY), true)
+CFLAG += -DUSE_CHEBY
+endif
+
+# Add MPI libs if selected
+ifeq ($(DO_MPI), ON)
+LDFLAG += ${MPI_LIB}
+endif
+
+# Add other libs
+LDFLAG += ${M_LIB} ${Z_LIB}
+
+FLAT_SOURCES=../src-flat/cheby.c ../src-flat/cmdLineParser.c ../src-flat/read.c ../src-flat/write.c ../src-flat/utility.c
+FLAT_OBJECTS=$(FLAT_SOURCES:.c=.o)
+SOURCES=$(wildcard *.c)
+OBJECTS=$(SOURCES:.c=.o)
+
+all: generate_info CoMDParallel
+
+%.o: %.c
+	${CC} ${CFLAG} -c $< -o $@
+
+CoMDParallel: ${FLAT_OBJECTS} ${OBJECTS}
+	${CC} -o ../CoMDParallel ${FLAT_OBJECTS} ${OBJECTS} ${LDFLAG}
+
+generate_info :
+	./generate_info_header "$(CC)" "$(FLAGS)"
+
+clean:
+	- rm *.o include/CoMD_info.h

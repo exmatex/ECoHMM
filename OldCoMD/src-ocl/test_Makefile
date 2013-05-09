@@ -1,0 +1,59 @@
+#
+# Makfile for src-ocl
+#
+
+include ../makefile.CHOICES
+
+INCLUDES = -I. -I./include -I/usr/include -I../src-flat/include ${OPENCL_INCLUDE} ${OTHER_INCLUDE}
+CC = gcc
+CFLAG += ${OPT} ${INCLUDES}
+LDFLAG += ${OPENCL_LIB} ${Z_LIB} ${M_LIB} ${OTHER_LIB} -lGLEW
+
+# Check for double precision
+ifeq ($(DOUBLE_PRECISION), ON)
+CFLAG += -DDOUBLE
+else
+CFLAG += -DSINGLE
+endif
+
+# Check for gzip support
+ifeq ($(DO_GZIP), ON)
+CFLAG += -DGZIPSUPPORT
+endif
+
+# Check for CHEBY 
+ifeq ($(USE_CHEBY), true)
+CFLAG += -DUSE_CHEBY
+endif
+
+# Check for interop viz
+ifeq ($(DO_INTEROP_VIZ), ON)
+CFLAG += -DINTEROP_VIZ
+INCLUDES += ${GLUT_INCLUDE} ${OPENGL_INCLUDE}
+LDFLAG += ${GLUT_LIB} ${OPENGL_LIB} -lGLEW
+endif
+
+# Check for OCL
+ifeq ($(DO_OCL), ON)
+CFLAG += -DUSE_OCL
+endif
+
+FLAT_SOURCES=../src-flat/cmdLineParser.c ../src-flat/domains.c ../src-flat/eam.c ../src-flat/ljForce.c ../src-flat/ic_fcc.c ../src-flat/mycommand.c ../src-flat/read.c ../src-flat/cheby.c ../src-flat/write.c ../src-flat/utility.c ../src-flat/timestep.c 
+FLAT_OBJECTS=$(FLAT_SOURCES:.c=.o)
+SOURCES=cl_utils.c helpers.c pmdOCL.c docompute.c quaternion.c yamlOutput.c
+OBJECTS=$(SOURCES:.c=.o)
+
+all: generate_info CoMDOCL
+
+generate_info : 
+	./generate_info_header "$(CC)" "$(FLAGS)"
+	- rm ../src-flat/*.o
+
+CoMDOCL: ${FLAT_OBJECTS} ${OBJECTS}
+	${CC} -o ../CoMDOCL ${FLAT_OBJECTS} ${OBJECTS} ${LDFLAG} 
+
+%.o: %.c
+	${CC} ${CFLAG} -c $< -o $@
+
+clean:
+	- rm *.o include/CoMD_info.h

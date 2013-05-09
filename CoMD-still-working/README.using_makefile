@@ -1,0 +1,16 @@
+If not using cmake, do the following.
+
+1. Use/create a makefile.XX file for your
+architecture.
+
+2. Copy your makefile.XX to makefile.CHOICES
+
+3. To make the executables.
+
+Individually:
+make -f test_Makefile CoMD
+make -f test_Makefile CoMDOCL
+make -f test_Makefile CoMDParallel
+
+All:
+make -f test_Makefile

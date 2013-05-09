@@ -1,0 +1,38 @@
+#
+# CoMD Makefile
+#
+
+include makefile.CHOICES
+
+PROGRAMS = CoMD CoMDViz CoMDOCL CoMDParallel 
+
+all :
+	(cd src-flat; make -f test_Makefile; cd ..) 
+	(cd src-viz; make -f test_Makefile; cd ..)
+	(cd src-ocl; make -f test_Makefile; cd ..) 
+	(cd src-parallel; make -f test_Makefile; cd ..) 
+
+CoMD :
+	(cd src-flat; make -f test_Makefile; cd ..)
+
+CoMDViz :
+	(cd src-viz; make -f test_Makefile; cd ..)
+
+CoMDOCL :
+	(cd src-ocl; make -f test_Makefile; cd ..)
+
+CoMDParallel :
+	(cd src-parallel; make -f test_Makefile; cd ..)
+
+clean :
+	(cd src-flat; make -f test_Makefile clean; cd ..)
+	(cd src-viz; make -f test_Makefile clean; cd ..)
+	(cd src-ocl; make -f test_Makefile clean; cd ..)
+	(cd src-parallel; make -f test_Makefile clean; cd ..)
+
+veryclean :
+	(cd src-flat; make -f test_Makefile clean; cd ..)
+	(cd src-viz; make -f test_Makefile clean; cd ..)
+	(cd src-ocl; make -f test_Makefile clean; cd ..)
+	(cd src-parallel; make -f test_Makefile clean; cd ..)
+	rm $(PROGRAMS)

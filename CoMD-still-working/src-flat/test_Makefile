@@ -1,0 +1,44 @@
+#
+# Makfile for src-flat
+#
+
+include ../makefile.CHOICES
+
+INCLUDES = -I. -I./include
+CC = gcc
+CFLAG += ${OPT} ${INCLUDES}
+LDFLAG += ${M_LIB} ${Z_LIB}
+
+# Check for double precision
+ifeq ($(DOUBLE_PRECISION), ON)
+CFLAG += -DDOUBLE
+else
+CFLAG += -DSINGLE
+endif
+
+# Check for gzip support
+ifeq ($(DO_GZIP), ON)
+CFLAG += -DGZIPSUPPORT
+endif
+
+# Check for CHEBY 
+ifeq ($(USE_CHEBY), true)
+CFLAG += -DUSE_CHEBY
+endif
+
+SOURCES=$(wildcard *.c)
+OBJECTS=$(SOURCES:.c=.o)
+
+all: generate_info CoMD
+
+%.o: %.c
+	${CC} ${CFLAG} -c $< -o $@
+
+CoMD: $(OBJECTS)
+	${CC} -o ../CoMD ${OBJECTS} ${LDFLAG} 
+
+generate_info : 
+	./generate_info_header "$(CC)" "$(FLAGS)"
+
+clean:
+	- rm *.o include/CoMD_info.h	

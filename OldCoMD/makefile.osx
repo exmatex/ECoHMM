@@ -1,0 +1,48 @@
+#
+# Compilation and link flags for CoMD
+#
+
+#
+# Option flags
+#
+# DOUBLE_PRECISION - Use double precision (ON/OFF)
+# DO_GZIP - Use gzip (ON/OFF)
+# USE_CHEBY - Use Chebyshev for EAM (true/false)
+# APPROX_CENTROSYM - Approximate centrosymmetry (ON/OFF)
+# OPT -O5 - Optimization flag (ex. -O5)
+# DO_IN_SITU_VIZ - DO_IN_SITU_VIZ (true/false)
+# USE_VTK - USE_VTK (true/false)
+# VIZ_ANIMATION - VIZ_ANIMATION (true/false)
+# DO_OCL - Build OpenCL code) (ON/OFF)
+# DO_INTEROP_VIZ - DO_INTEROP_VIZ (true/false)
+# DO_MPI - Use MPI for parallel (on/off)
+#
+DOUBLE_PRECISION = OFF
+DO_GZIP = ON
+USE_CHEBY = false
+APPROX_CENTROSYM = ON
+OPT = -O5
+DO_IN_SITU_VIZ = false
+USE_VTK = false
+VIZ_ANIMATION = false
+DO_OCL = ON
+DO_INTEROP_VIZ = false
+DO_MPI = off
+
+#
+# Library locations and flags
+#
+VTK_LIB =
+VTK_INCLUDE =
+OPENGL_LIB = -framework OpenGL
+OPENGL_INCLUDE = -I/System/Library/Frameworks/OpenGL.framework/Headers
+GLUT_LIB = -framework GLUT
+GLUT_INCLUDE = -I/System/Library/Frameworks/GLUT.framework/Headers
+OPENCL_LIB = -framework OpenCL
+OPENCL_INCLUDE = -I/System/Library/Frameworks/OpenCL.framework/Headers
+Z_LIB = -lz
+M_LIB = -lm
+MPI_LIB =  -L/usr/lib -lmpi_cxx -lmpi -lopen-rte -lopen-pal
+MPI_INCLUDE = -I/usr/include
+OTHER_LIB = -lstdc++
+OTHER_INCLUDE =

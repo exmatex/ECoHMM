@@ -1,0 +1,83 @@
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 118)
++++ CMakeLists.txt	(working copy)
+@@ -14,6 +14,11 @@
+ set (DO_INTEROP_VIZ false CACHE BOOL "DO_INTEROP_VIZ")
+ set (DO_MPI ON CACHE BOOL "Use MPI")
+ 
++if (BUILD_SHARED_LIBS)
++message(STATUS "Using shared libraries")
++set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.a")
++endif (BUILD_SHARED_LIBS)
++
+ set(VTK_DIR "" CACHE LOCATION "VTK Directory")
+ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR})
+ 
+@@ -37,21 +42,21 @@
+       "${CMAKE_SOURCE_DIR}/src-ocl/cmake"
+ )
+ 
+-#cluge for cmake inability to find glut.h correctly 
+-find_path(GLUT_INCLUDE_DIR glut.h)
+-if ( NOT EXISTS ${GLUT_INCLUDE_DIR}/glut.h ) 
+-   if ( EXISTS ${GLUT_INCLUDE_DIR}/GL/glut.h )
+-      set ( GLUT_INCLUDE_DIR ${GLUT_INCLUDE_DIR}/GL)
+-   elseif ( EXISTS ${GLUT_INCLUDE_DIR}/OpenGL/glut.h )
+-      set ( GLUT_INCLUDE_DIR ${GLUT_INCLUDE_DIR}/OpenGL)
+-   else ()
+-      MESSAGE ("   _______________" FATAL ERROR "Unable to find glut.h" )
+-   endif ()
+-endif ()
++#cluge for cmake inability to find glut.h correctly
++# find_path(GLUT_INCLUDE_DIR glut.h)
++# if ( NOT EXISTS ${GLUT_INCLUDE_DIR}/glut.h )
++#    if ( EXISTS ${GLUT_INCLUDE_DIR}/GL/glut.h )
++#       set ( GLUT_INCLUDE_DIR ${GLUT_INCLUDE_DIR}/GL)
++#    elseif ( EXISTS ${GLUT_INCLUDE_DIR}/OpenGL/glut.h )
++#       set ( GLUT_INCLUDE_DIR ${GLUT_INCLUDE_DIR}/OpenGL)
++#    else ()
++#       MESSAGE ("   _______________" FATAL ERROR "Unable to find glut.h" )
++#    endif ()
++# endif ()
+ 
+ include_directories(${CMAKE_SOURCE_DIR})
+ 
+ add_subdirectory(src-flat)
+-add_subdirectory(src-viz)
+-add_subdirectory(src-ocl)
+-add_subdirectory(src-parallel)
++# add_subdirectory(src-viz)
++# add_subdirectory(src-ocl)
++# add_subdirectory(src-parallel)
+Index: src-flat/CMakeLists.txt
+===================================================================
+--- src-flat/CMakeLists.txt	(revision 118)
++++ src-flat/CMakeLists.txt	(working copy)
+@@ -37,7 +37,25 @@
+       utility.c
+       timestep.c
+       yamlOutput.c)
+-  set_target_properties(CoMD PROPERTIES COMPILE_FLAGS "${OPT}") 
++  set_target_properties(CoMD PROPERTIES COMPILE_FLAGS "${OPT}")
+   target_link_libraries(CoMD ${Z_LIB} ${M_LIB})
+ endif ()
+ 
++add_library(
++     CoMD_Shared
++       pmd.c
++       cheby.c
++       docompute.c
++       cmdLineParser.c
++       domains.c
++       eam.c
++       ic_fcc.c
++       ljForce.c
++       mycommand.c
++       read.c
++       write.c
++       utility.c
++       timestep.c
++       yamlOutput.c)
++   set_target_properties(CoMD_Shared PROPERTIES COMPILE_FLAGS "${OPT} -I ${CMAKE_SOURCE_DIR}/src-flat/include -I /usr/include ")
++   target_link_libraries(CoMD_Shared ${Z_LIB} ${M_LIB})

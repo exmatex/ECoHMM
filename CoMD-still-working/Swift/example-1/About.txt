@@ -1,0 +1,70 @@
+
+////
+This is an asciidoc file.  Just do: asciidoc About.txt
+////
+
+= CoMD/Swift: Example 1
+
+== File index
+
++About.txt+:: This file
+
++CoMD-simple.swift+:: The Swift script: calls into CoMD
+
++CoMDSwift.swift+:: The Swift header file: declares CoMD functions
+
++build.sh+:: Compiles the C code to build the Swift package
+
++comdswift.h+:: Header file: exposes C functions to Swift
+
++comdswift.c+:: Implementation of C functions callable by Swift.
+                These are simple short wrappers around the CoMD core
+                functions.
+
++comdswift.i+:: SWIG interface file: compatible with +comdswift.h+
+
+== Usage
+
+. Install SWIG, Turbine, STC
+. Compile CoMD with shared libraries
++
+----
+cd CoMD
+patch -p0 < Swift/patches/shared-library.diff
+make clean
+rm CMakeCache.txt
+cmake -DBUILD_SHARED_LIBS=true
+make
+----
+
+. Build the Swift package
++
+First, edit +build.sh+ to set +CoMD_HOME+. Then:
++
+----
+cd CoMD/Swift/example-1
+./build.sh
+----
++
+The build script should be easy to customize.  Use +set -x+ to debug.
+
+. Compile and run the Swift script
++
+----
+./test-CoMD-simple.sh
+----
+
+== Todos
+
+. Do something interesting with virial stress output
+. Try to minimize file I/O- replace with in-memory data passing
+  through Swift
+. Run at larger concurrency
+. Do something with YAML files- Swift is good at this kind of thing
+
+////
+Local Variables:
+mode: doc
+eval: (auto-fill-mode 1)
+End:
+////

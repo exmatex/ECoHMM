@@ -1,0 +1,54 @@
+#
+# Makfile for src-flat
+#
+
+include ../makefile.CHOICES
+
+INCLUDES = -I. -Iinclude -I../src-flat/include ${GLUT_INCLUDE} ${OPENGL_INCLUDE}
+CC = g++
+CFLAG += ${OPT} ${INCLUDES} -DUSE_IN_SITU_VIZ
+LDFLAG += ${GLUT_LIB} ${OPENGL_LIB} ${M_LIB} ${Z_LIB} -lpthread
+
+# Check for double precision
+ifeq ($(DOUBLE_PRECISION), ON)
+CFLAG += -DDOUBLE
+else
+CFLAG += -DSINGLE
+endif
+
+# Check for gzip support
+ifeq ($(DO_GZIP), ON)
+CFLAG += -DGZIPSUPPORT
+endif
+
+# Check for CHEBY 
+ifeq ($(USE_CHEBY), true)
+CFLAG += -DUSE_CHEBY
+endif
+
+#Check for centrosymmetry approximation
+ifeq ($(APPROX_CENTROSYM), ON)
+CFLAG += -DAPPROX_CENTROSYM
+endif
+ 
+FLAT_SOURCES=docompute.c cheby.c ic_fcc.c cmdLineParser.c domains.c eam.c ljForce.c mycommand.c read.c write.c utility.c timestep.c yamlOutput.c
+FLAT_OBJECTS=$(FLAT_SOURCES:.c=.o2)
+SOURCES=AtomVisualize.c pmdViz.c quaternion.c
+OBJECTS=$(SOURCES:.c=.o)
+
+all: generate_info CoMDViz
+
+%.o2: ../src-flat/%.c
+	${CC} ${CFLAG} -c ../src-flat/$< -o $@
+
+%.o: %.c
+	${CC} ${CFLAG} -c $< -o $@
+
+CoMDViz: $(FLAT_OBJECTS) $(OBJECTS)
+	${CC} -o ../CoMDViz $(FLAT_OBJECTS) ${OBJECTS} ${LDFLAG} 
+
+generate_info : 
+	./generate_info_header "$(CC)" "$(FLAGS)"
+
+clean:
+	- rm *.o *.o2 include/CoMD_info.h	
