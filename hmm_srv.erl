@@ -36,7 +36,7 @@ echo(Name) ->
     gen_server:cast(Name, echo_message).
 
 send_stress(Name, Stress) ->
-    gen_server:cast(Name, {send_stress, Stress}).
+    gen_server:call(Name, {send_stress, Stress}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -54,15 +54,20 @@ handle_cast(echo_message,
             State = #state{name = Name,
                            command_line = CommandLine}) ->
     io:format("~p: ~p~n", [Name, CommandLine]),
-    {noreply, State};
-handle_cast({send_stress, Stress},
-            State = #state{name = Name, port = Port}) ->
-    [StressX, StressY] = Stress,
-    Formatted = io_lib:format("~.6f ~.6f~n", [StressX, StressY]),
-    Payload = list_to_binary(lists:flatten(Formatted)),
-    erlang:port_command(Port, Payload),
     {noreply, State}.
+%handle_cast({send_stress, Stress},
+%            State = #state{name = Name, port = Port}) ->
+%    [StressX, StressY] = Stress,
+%    Formatted = io_lib:format("~.6f ~.6f~n", [StressX, StressY]),
+%    Payload = list_to_binary(lists:flatten(Formatted)),
+%    erlang:port_command(Port, Payload),
+%    {noreply, State}.
 
+handle_call({send_stress, Stress}, _From,
+            State = #state{name = Name, port = Port}) ->
+    [StressList| _] = Stress,
+    send_to_port(Port, StressList),
+    {reply, ok, State};
 handle_call(_Message, _From, State) ->
     {reply, ok, State}.
 
@@ -93,3 +98,18 @@ code_change(_OldVsn, State, _Extra) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
+
+send_to_port(_P, []) ->
+    ok;
+send_to_port(P, L) ->
+    [F | R] = L,
+    %io:format("L: ~p~nF: ~p~nR: ~p~n", [L,F,R]),
+    Formatted = io_lib:format("~.6f", [F]),
+    Payload = list_to_binary(lists:flatten(Formatted)),
+    erlang:port_command(P, Payload),
+    send_to_port(P, R).
+
+
+
+
+

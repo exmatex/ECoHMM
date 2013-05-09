@@ -8,7 +8,8 @@
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
--define(CMD, "./comd -x 123.0 -y 234.0 -z 345.0").
+-define(CMD, "./OldCoMD/CoMD -x 6 -y 6 -z 6").
+%%-define(CMD, "./comd -x 123.0 -y 234.0 -z 345.0").
 
 
 %%====================================================================

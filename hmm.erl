@@ -1,16 +1,21 @@
 -module(hmm).
 
--export([run/1]).
+-export([run/1, bun/2]).
 
 run(N) ->
     {ok, PidCoMD} = comd_sup:start_link(self(), N),
     {ok, PidHMM}  = hmm_sup:start_link(),
-    hmm_srv:send_stress(losolve, [23.9, 22.3]),
+    hmm_srv:send_stress(losolve, [23.9, 22.3]),  % needed for test with hmm.c (not LOsolve)
     unlink(PidCoMD),   % so shell doesn't crash
     unlink(PidHMM),    % so shell doesn't crash
     Servers = get_servers([], N),
-    io:format("~p servers started: ~p~n", [length(Servers), Servers]),
+    io:format("~p CoMD servers started~n", [length(Servers)]),
     timesteps(1, Servers).
+
+bun(T, N) ->
+    {ok, PidHMM}  = hmm_sup:start_link(),
+    unlink(PidHMM),    % so shell doesn't crash
+    lamesteps(T, N).
 
 %% Returns the list of stated CoMD servers.  This list is
 %% collected by accepting startup messages from each individual
@@ -37,8 +42,33 @@ timesteps(N, S) when N > 0 ->
     io:format("strains: ~p~n", [lists:sort(Strain)]),
     %update_stress(AllNames),
     timesteps(N-1, S);
-timesteps(0, S) ->
-    ok.
+timesteps(0, _S) ->
+    done.
+
+%lamesteps(NumServers, NumTimesteps) when NumTimesteps > 0 ->
+ %   {ok, PidCoMD} = comd_sup:start_link(self(), NunServers),
+ %   unlink(PidCoMD),   % so shell doesn't crash
+ %   Servers = get_servers([], N),
+ %   lamesteps(NumTimesteps, Servers).
+%lamesteps(NumTimesteps, Servers) when NumTimesteps -> 
+
+lamesteps(T, N) when T > 0 ->
+    io:format("~n"),
+    {ok, PidCoMD} = comd_sup:start_link(self(), N),
+    io:format("~n"),
+    unlink(PidCoMD),   % so shell doesn't crash
+    Servers = get_servers([], N),
+    io:format("[~p]   ~p...CoMD servers started~n", [T, length(Servers)]),
+    %%  Don't meed to send strain--there is no looping. CoMD runs once.
+    %% lists:foreach(fun send_stress/1, S),
+    Stress = get_strain([], length(Servers)),
+    io:format("[~p]   ~p...strains returned~n", [T, length(Stress)]),
+    %%io:format("stresses: ~p~n", [lists:sort(Stress)]),
+    hmm_srv:send_stress(losolve, [lists:sort(Stress)]),
+    io:format("[~p]   ~p...stresses sent to LOsolve~n", [T, length(Stress)]),
+    lamesteps(T-1, N);
+lamesteps(0, _N) ->
+    done.
 
 send_stress(E) ->
     {_, Server} = E,
@@ -46,9 +76,9 @@ send_stress(E) ->
 
 get_strain(L, N) when N > 0 ->
     receive
-        {strain, Cell, Strain} ->
+        {Strain} ->
             ok
     end,
-    get_strain([{Cell, Strain} | L], N-1);
+    get_strain([list_to_float(Strain) | L], N-1);
 get_strain(L, 0) ->
     L.

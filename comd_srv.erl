@@ -5,7 +5,7 @@
 -export([start_link/5, stop/1]).
 
 %% Client API
--export([echo/1, set_stress/2]).
+-export([set_stress/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2,
@@ -33,9 +33,6 @@ stop(Name) ->
 %% Client API
 %%====================================================================
 
-echo(Name) ->
-    gen_server:cast(Name, echo_message).
-
 set_stress(Name, Stress) ->
     gen_server:cast(Name, {set_stress, Stress}).
 
@@ -44,6 +41,7 @@ set_stress(Name, Stress) ->
 %%====================================================================
 
 init([Name, CommandLine, Index, TimeStep, Pid]) ->
+    io:format("+"),
     process_flag(trap_exit, true),
     Port = open_port({spawn, CommandLine}, [use_stdio, exit_status]),
     % Send our name and cell to HMM so it can tell us what to do.
@@ -55,15 +53,6 @@ init([Name, CommandLine, Index, TimeStep, Pid]) ->
                 port = Port,
                 hmm_pid=Pid}}.
 
-handle_cast(echo_message,
-            State = #state{name = Name,
-                           command_line = CommandLine,
-                           index = Index,
-                           time_step = TimeStep,
-                           port = Port,
-                           hmm_pid=Pid}) ->
-    io:format("~p: ~p ~p ~p ~p~n", [Name, CommandLine, Index, TimeStep, Pid]),
-    {noreply, State#state{time_step = TimeStep + 1}};
 handle_cast({set_stress, Stress},
             State = #state{name = Name, time_step = TimeStep, port = Port}) ->
     io:format("Server[~p] got stress: ~p~n", [Name, Stress]),
@@ -80,7 +69,7 @@ handle_call(_Message, _From, State) ->
 %% Get replies from the external code. Messages preceded
 %% by code that specifies function to be carried out here.
 %%
-%%   strain: resultant strain from comd
+%%   stress: resultant strain from comd
 handle_info({Port, {data, Data}}, 
             State = #state{name = Name,
                            command_line = CommandLine,
@@ -88,13 +77,14 @@ handle_info({Port, {data, Data}},
                            time_step = TimeStep,
                            port = Port,
                            hmm_pid=Pid}) ->
-    L = string:tokens(Data, " "),
-    [CodeString|_] = L,
-    Code = list_to_atom(CodeString),
+    %%L = string:tokens(Data, " "),
+    %%[CodeString|_] = L,
+    %%Code = list_to_atom(CodeString),
     %Fun = fun string_to_num/1,
     %lists:foreach(Fun, L),
     %io:format("[~p]{~p} Data: ~p~n", [Name, TimeStep, Code]),
-    process_code(Code, L, Index, TimeStep, Pid),
+    %%process_code(Code, L, Index, TimeStep, Pid),
+    Pid ! {Data},
     {noreply, State};
 handle_info({Port, {exit_status, 234}}, State) ->
     % io:format("NORMAL: ~p ~p~n", [Port, 234]),
@@ -106,7 +96,7 @@ handle_info({'EXIT', Port, Status}, State) ->
     {noreply, State}.
 
 terminate(normal, #state{name = Name}) ->
-    io:format("~p: shutdown cleanly (voluntary)~n", [Name]),
+    %io:format("~p: shutdown cleanly (voluntary)~n", [Name]),
     ok;
 terminate(shutdown, #state{name = Name}) ->
     io:format("~p: shutdown cleanly (forced)~n", [Name]),

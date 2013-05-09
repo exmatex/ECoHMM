@@ -8,7 +8,8 @@
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
--define(CMD, "./hmm").
+-define(CMD, "./OldCoMD/LOsolve").
+%% -define(CMD, "./hmm").
 
 
 %%====================================================================

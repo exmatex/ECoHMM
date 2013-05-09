@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
 	scanf("%f %f", &stress_x, &stress_y);
     sleep(2);
-	printf("strain %f %f\n", 1.0/stress_x, 1.0/stress_y);
+	printf("stress %f %f\n", 1.0/stress_x, 1.0/stress_y);
     fflush(stdout);
     sleep(20);
     return(-22);
