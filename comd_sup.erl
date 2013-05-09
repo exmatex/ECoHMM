@@ -34,7 +34,7 @@ init([Pid, N]) ->
         end,
         L
     ),
-    {ok, { {one_for_one, 3, 10}, Children }}.
+    {ok, { {one_for_one, 50, 10}, Children }}.
 
 %%====================================================================
 %% Internal functions
